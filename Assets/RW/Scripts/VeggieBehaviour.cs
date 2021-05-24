@@ -39,15 +39,32 @@ public class VeggieBehaviour : MonoBehaviour
 
     float dTime = 0;
 
-    Rigidbody rb;
+    Rigidbody rigidBody;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        rigidBody = GetComponent<Rigidbody>();
     }
 
     void Update()
     {
         // FILL IN
+        if (rigidBody.isKinematic)
+        {
+            dTime += Time.deltaTime;
+
+            if (dTime < 1.0f)
+            {
+                Vector3 position = transform.position;
+                float z = position.z;
+                position.z = destination.z;
+
+                position = Vector3.Lerp(position, destination, dTime);
+                position.z = z;
+                transform.position = position;
+            }
+
+            transform.Translate(movement * Time.deltaTime);
+        }
     }
 }

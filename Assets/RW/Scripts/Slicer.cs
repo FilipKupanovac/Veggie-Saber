@@ -39,14 +39,33 @@ public class Slicer : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         // FILL IN
+        SplitMesh(other.gameObject);
+        Destroy(other.gameObject);
+        
+        ControllerHaptics haptics = GetComponentInParent<ControllerHaptics>();
+        if (haptics)
+        {
+            haptics.HapticEvent();
+        }
+
+        if (gameManager)
+        {
+            gameManager.GetComponent<GameManager>().score += 10;
+        }
     }
 
     // Get a cutting plane from the rotation/position of the saber
     private Plane GetPlane(GameObject go)
     {
+        Vector3 point1 = transform.rotation * new Vector3(0, 0, 0);
+        Vector3 point2 = transform.rotation * new Vector3(0, 1, 0);
+        Vector3 point3 = transform.rotation * new Vector3(0, 0, 1);
+
         Plane rv = new Plane();
 
         // FILL IN
+
+        rv.Set3Points(point1, point2, point3);
 
         return rv;
     }
@@ -56,7 +75,24 @@ public class Slicer : MonoBehaviour
     {
         Mesh cMesh = new Mesh();
 
+        cMesh.name = "slicedMesh";
+        Vector3[] vertices = oMesh.vertices;
+
+        for(int i = 0; i < vertices.Length; i++)
+        {
+            bool side = p.GetSide(vertices[i]);
+
+            if(side == halve)
+            {
+                vertices[i] = p.ClosestPointOnPlane(vertices[i]);
+            }
+        }
+
         // FILL IN
+        cMesh.vertices = vertices;
+        cMesh.triangles = oMesh.triangles;
+        cMesh.normals = oMesh.normals;
+        cMesh.uv = oMesh.uv;
 
         return cMesh;
     }
@@ -67,8 +103,19 @@ public class Slicer : MonoBehaviour
         // 1.
         float sign = isLeft ? -1 : 1;
         GameObject half = Instantiate(go);
+        MeshFilter filter = half.GetComponent<MeshFilter>();
 
         // FILL IN
+        Plane cuttingPlane = GetPlane(go);
+        filter.mesh = CloneMesh(cuttingPlane, filter.mesh, isLeft);
+
+        half.transform.position = go.transform.position + transform.rotation * new Vector3(sign * 0.05f, 0);
+
+        half.GetComponent<Rigidbody>().isKinematic = false;
+        half.GetComponent<Rigidbody>().useGravity = true;
+
+        half.GetComponent<Collider>().isTrigger = false;
+        Destroy(half, 2);
 
         return half;
     }
@@ -77,5 +124,9 @@ public class Slicer : MonoBehaviour
     private void SplitMesh(GameObject go)
     {
         // FILL IN
+        GameObject leftHalf = MakeHalf(go, true);
+        GameObject rightHalf = MakeHalf(go, false);
+
+        GetComponent<AudioSource>().Play();
     }
 }

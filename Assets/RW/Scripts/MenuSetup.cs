@@ -51,15 +51,31 @@ public class MenuSetup : MonoBehaviour
     private void SetSaberLocation(GameObject saber, Vector3 position)
     {
         // FILL IN
+        if (saber)
+        {
+            saber.transform.SetParent(null);
+            saber.transform.position = transform.position;
+            saber.transform.localPosition = position;
+            saber.transform.localRotation = Quaternion.identity;
+        }
     }
 
     public void OnEnable()
     {
         // FILL IN
+        SetSaberLocation(sabers[0], leftStart);
+        SetSaberLocation(sabers[1], rightStart);
+
+        SetScores();
     }
 
     public void SetScores()
     {
         // FILL IN
+        TextMeshProUGUI highscore = highScoreText.GetComponent<TextMeshProUGUI>();
+        highscore.text = gameManager.GetComponent<GameManager>().highScore.ToString();
+
+        TextMeshProUGUI score = scoreText.GetComponent<TextMeshProUGUI>();
+        score.text = gameManager.GetComponent<GameManager>().score.ToString();
     }
 }

@@ -40,5 +40,24 @@ public class GrabItem : MonoBehaviour
     void Update()
     {
         // FILL IN
+        bool gripDown = false;
+        InputDevice hand = InputDevices.GetDeviceAtXRNode(handType);
+        hand.TryGetFeatureValue(CommonUsages.gripButton, out gripDown);
+
+        if (gripDown)
+        {
+            Collider[] overlaps = Physics.OverlapSphere(transform.position, 0.02f);
+
+            foreach(Collider collider in overlaps)
+            {
+                GameObject other = collider.gameObject;
+
+                if (other.GetComponent<Grabbable>())
+                {
+                    if (other.gameObject.transform.parent == null)
+                        other.transform.SetParent(transform);
+                }
+            }
+        }
     }
 }
